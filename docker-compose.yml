@@ -1,0 +1,35 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "CampusCart!2026"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+  server:
+    build: ./server
+    restart: unless-stopped
+    environment:
+      PORT: 4000
+      DB_SERVER: sqlserver
+      DB_PORT: 1433
+      DB_NAME: CampusCart
+      DB_USER: sa
+      DB_PASSWORD: "CampusCart!2026"
+      DB_ENCRYPT: "false"
+    depends_on:
+      - sqlserver
+    ports:
+      - "4000:4000"
+  client:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    depends_on:
+      - server
+    ports:
+      - "8080:80"
+volumes:
+  sqlserver-data:
